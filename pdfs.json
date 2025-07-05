@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Sample PDF 1",
+    "path": "pdfs/sample1.pdf"
+  },
+  {
+    "name": "Sample PDF 2",
+    "path": "pdfs/sample2.pdf"
+  }
+]
