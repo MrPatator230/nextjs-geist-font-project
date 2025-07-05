@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Visualiseur de PDF Moderne</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-8">
+  <div id="rooter" class="w-full max-w-3xl bg-white rounded-lg shadow-lg p-6">
+    <!-- Reader component will be rendered here -->
+  </div>
+
+  <script>
+    // Reader component
+    class Reader {
+      constructor(rootElement) {
+        this.root = rootElement;
+        this.pdfs = [];
+        this.selectedPdf = null;
+        this.init();
+      }
+
+      async init() {
+        await this.loadPdfList();
+        this.render();
+      }
+
+      async loadPdfList() {
+        try {
+          const response = await fetch('viewer.php?action=list');
+          if (!response.ok) throw new Error('Erreur lors du chargement de la liste des PDFs');
+          this.pdfs = await response.json();
+        } catch (error) {
+          this.root.innerHTML = `<p class="text-red-600 font-semibold">${error.message}</p>`;
+        }
+      }
+
+      render() {
+        this.root.innerHTML = `
+          <h1 class="text-4xl font-extrabold mb-6 text-gray-900 text-center">Visualiseur de PDF Moderne</h1>
+          <div class="flex flex-col sm:flex-row items-center gap-4 mb-6">
+            <label for="pdfSelect" class="text-lg font-medium text-gray-700">Choisissez un PDF :</label>
+            <select id="pdfSelect" class="flex-grow p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="">-- Sélectionnez un PDF --</option>
+              ${this.pdfs.map(pdf => `<option value="${pdf.path}">${pdf.name}</option>`).join('')}
+            </select>
+            <button id="openPdfBtn" class="bg-indigo-600 text-white py-3 px-6 rounded-md hover:bg-indigo-700 transition">Ouvrir le PDF</button>
+          </div>
+          <div id="pdfViewer" class="border border-gray-300 rounded-md h-[600px]">
+            <p class="text-center text-gray-500 pt-24">Sélectionnez un PDF et cliquez sur "Ouvrir le PDF" pour le visualiser ici.</p>
+          </div>
+        `;
+
+        this.attachEvents();
+      }
+
+      attachEvents() {
+        const select = this.root.querySelector('#pdfSelect');
+        const openBtn = this.root.querySelector('#openPdfBtn');
+
+        openBtn.addEventListener('click', () => {
+          const pdfPath = select.value;
+          if (!pdfPath) {
+            alert('Veuillez sélectionner un PDF.');
+            return;
+          }
+          this.selectedPdf = pdfPath;
+          // Open PDF in a new tab instead of iframe
+          window.open(pdfPath, '_blank', 'width=800,height=600');
+        });
+      }
+
+      openPdf(viewer, path) {
+        // No longer used since PDF opens in new tab
+      }
+    }
+
+    // Rooter component
+    class Rooter {
+      constructor() {
+        this.rootElement = document.getElementById('rooter');
+        this.reader = new Reader(this.rootElement);
+      }
+    }
+
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', () => {
+      new Rooter();
+    });
+  </script>
+</body>
+</html>
